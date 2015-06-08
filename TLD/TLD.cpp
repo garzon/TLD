@@ -8,6 +8,8 @@
 
 #include "TLD.h"
 
+using namespace _TLD;
+
 TLD::TLD(const Mat &img, const TYPE_BBOX &_bb)
 {
     bbox = _bb;

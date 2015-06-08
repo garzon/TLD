@@ -20,10 +20,12 @@
 
 #include "TLDSystemStruct.h"
 
+namespace _TLD {
+
 using namespace std;
 using namespace cv;
 
-class TLD
+class _TLD
 {
 private:
     MedianFlow *tracker;
@@ -55,5 +57,7 @@ public:
     TYPE_BBOX getBB();
     
 };
+
+}
 
 #endif /* defined(__TLD__TLD__) */

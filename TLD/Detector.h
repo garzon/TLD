@@ -12,7 +12,7 @@
 #include <iostream>
 #include <algorithm>
 #include <opencv2/opencv.hpp>
-#include <opencv2/legacy/legacy.hpp>
+
 
 #include "VarClassifier.h"
 #include "RandomFernsClassifier.h"
@@ -20,6 +20,8 @@
 #include "Learner.h"
 
 #include "TLDSystemStruct.h"
+
+namespace _TLD {
 
 using namespace std;
 using namespace cv;
@@ -67,5 +69,7 @@ public:
     
     ~Detector();
 };
+
+}
 
 #endif /* defined(__TLD__Detector__) */

@@ -13,6 +13,8 @@
 #include <opencv2/opencv.hpp>
 #include "TLDSystemStruct.h"
 
+namespace _TLD {
+
 using namespace std;
 using namespace cv;
 
@@ -30,5 +32,7 @@ public:
     float getVar(const Rect &bb);
     bool getClass(TYPE_DETECTOR_SCANBB &bb, float patternVar);
 };
+
+}
 
 #endif /* defined(__TLD__VarClassifier__) */

@@ -8,6 +8,7 @@
 
 #include "Detector.h"
 
+using namespace _TLD;
 
 void Detector::init(const Mat &img, const Mat &imgB, const Mat &img32F, const Rect &_patternBB)
 {

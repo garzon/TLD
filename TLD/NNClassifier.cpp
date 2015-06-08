@@ -8,6 +8,8 @@
 
 #include "NNClassifier.h"
 
+using namespace _TLD;
+
 NNClassifier::NNClassifier():
 thPos(NN_TH_POS)
 {

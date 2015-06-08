@@ -8,6 +8,8 @@
 
 #include "Learner.h"
 
+using namespace _TLD;
+
 void Learner::init(Detector *_detector)
 {
     detector = _detector;

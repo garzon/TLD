@@ -8,6 +8,8 @@
 
 #include "VarClassifier.h"
 
+using namespace _TLD;
+
 VarClassifier::VarClassifier(const Mat &img)
 {
     // CV_32F causes overflow ?

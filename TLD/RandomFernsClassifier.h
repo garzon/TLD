@@ -14,6 +14,8 @@
 #include "TLDSystemStruct.h"
 #include <map>
 
+namespace _TLD {
+
 using namespace std;
 using namespace cv;
 
@@ -98,5 +100,7 @@ public:
     
     void train(const TYPE_TRAIN_DATA_SET &trainDataSet);
 };
+
+}
 
 #endif /* defined(__TLD__RandomFernsClassifier__) */

@@ -14,6 +14,8 @@
 #include <vector>
 #include "TLDSystemStruct.h"
 
+namespace _TLD {
+
 using namespace std;
 using namespace cv;
 
@@ -48,5 +50,7 @@ public:
     // assert : img.type() == CV_8U
     bool getClass(const Mat &img32F, TYPE_DETECTOR_SCANBB &sbb);
 };
+
+}
 
 #endif /* defined(__TLD__NNClassifier__) */

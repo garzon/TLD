@@ -11,9 +11,12 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <opencv2/features2d.hpp>
 
 #include "TLDSystemStruct.h"
 #include "Detector.h"
+
+namespace _TLD {
 
 class Detector;
 
@@ -34,5 +37,7 @@ public:
     
     void learn(const Mat &img, const Mat &imgB, const Mat &img32F, const TYPE_BBOX &ret);
 };
+
+}
 
 #endif /* defined(__TLD__Learner__) */

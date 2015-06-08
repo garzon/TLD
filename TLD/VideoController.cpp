@@ -8,6 +8,8 @@
 
 #include "VideoController.h"
 
+using namespace _TLD;
+
 VideoController::~VideoController()
 {
     if(!imageMode) delete videoCapture;

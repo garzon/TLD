@@ -12,6 +12,8 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
+namespace _TLD {
+
 using namespace cv;
 using namespace std;
 
@@ -171,6 +173,8 @@ static void outputInfo(const string module ,const string info)
     if(QUIET_MODE) return;
     
     cerr << "[" << module << "] " << info << endl;
+}
+
 }
 
 #endif

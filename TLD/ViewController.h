@@ -16,6 +16,8 @@
 #include "VideoController.h"
 #include "TLDSystemStruct.h"
 
+namespace _TLD {
+
 using namespace std;
 using namespace cv;
 
@@ -50,5 +52,7 @@ public:
     
     void refreshCache();
 };
+
+}
 
 #endif /* defined(__MedianFlow__ViewController__) */

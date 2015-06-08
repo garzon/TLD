@@ -12,6 +12,8 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
+namespace _TLD {
+
 using namespace std;
 using namespace cv;
 
@@ -50,5 +52,7 @@ public:
     
     void jumpToFrameNum(int num);
 };
+
+}
 
 #endif /* defined(__MedianFlow__VideoController__) */

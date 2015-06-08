@@ -8,6 +8,8 @@
 
 #include "RandomFernsClassifier.h"
 
+using namespace _TLD;
+
 RandomFernsClassifier::RandomFernsClassifier()
 {
     
