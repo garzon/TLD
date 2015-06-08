@@ -1,3 +1,5 @@
+CONFIG += c++11
+
 HEADERS += \
     TLD/Detector.h \
     TLD/Learner.h \
@@ -7,7 +9,10 @@ HEADERS += \
     TLD/TLDSystemStruct.h \
     TLD/VarClassifier.h \
     TLD/VideoController.h \
-    TLD/ViewController.h
+    TLD/ViewController.h \
+    MedianFlow/MedianFlow/OpticalFlow.h \
+    MedianFlow/MedianFlow/MedianFlow.h \
+    main.h
 
 SOURCES += \
     TLD/Detector.cpp \
@@ -18,4 +23,8 @@ SOURCES += \
     TLD/TLD.cpp \
     TLD/VarClassifier.cpp \
     TLD/VideoController.cpp \
-    TLD/ViewController.cpp
+    TLD/ViewController.cpp \
+    MedianFlow/MedianFlow/OpticalFlow.cpp \
+    MedianFlow/MedianFlow/MedianFlow.cpp
+
+LIBS += /usr/local/lib/libopencv*.so

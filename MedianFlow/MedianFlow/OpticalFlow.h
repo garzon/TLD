@@ -13,7 +13,9 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-#include "TLDSystemStruct.h"
+#include "../../TLD/TLDSystemStruct.h"
+
+namespace _TLD {
 
 using namespace std;
 using namespace cv;
@@ -34,5 +36,7 @@ public:
     void trackPts(vector<TYPE_OF_PT> &pts, vector<TYPE_OF_PT> &retPts, vector<uchar> &status);
 
 };
+
+}
 
 #endif /* defined(__MedianFlow__OpticalFlow__) */

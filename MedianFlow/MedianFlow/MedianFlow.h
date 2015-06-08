@@ -10,7 +10,7 @@
 #define __MedianFlow__MedianFlow__
 
 
-#include "TLDSystemStruct.h"
+#include "../../TLD/TLDSystemStruct.h"
 
 #include <cmath>
 #include <iostream>
@@ -18,8 +18,10 @@
 #include "OpticalFlow.h"
 
 // show result
-#include "ViewController.h"
+#include "../../TLD/ViewController.h"
 //
+
+namespace _TLD {
 
 using namespace std;
 using namespace cv;
@@ -59,5 +61,7 @@ public:
     
     TYPE_MF_BB trackBox(const TYPE_MF_BB &inputBox, int &status);
 };
+
+}
 
 #endif /* defined(__MedianFlow__MedianFlow__) */

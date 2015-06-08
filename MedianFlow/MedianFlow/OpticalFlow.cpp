@@ -8,6 +8,8 @@
 
 #include "OpticalFlow.h"
 
+using namespace _TLD;
+
 OpticalFlow::OpticalFlow()
 {
 

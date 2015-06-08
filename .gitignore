@@ -1,0 +1,6 @@
+./*.pro.user*
+./test
+*.*~
+*.so
+*.o
+./TLD.xcodeproj/*

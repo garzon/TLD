@@ -80,7 +80,7 @@ bool VideoController::readNextFrame()
     }
     else
     {
-        bool f = videoCapture -> read(frames[curr]);
+        bool f = videoCapture->read(frames[curr]);
         
         resize(frames[curr], frames[curr], _frameSize);
         

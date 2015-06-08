@@ -8,6 +8,8 @@
 
 #include "MedianFlow.h"
 
+using namespace _TLD;
+
 MedianFlow::MedianFlow()
 {
 

@@ -14,7 +14,7 @@
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 
-#include "MedianFlow.h"
+#include "../MedianFlow/MedianFlow/MedianFlow.h"
 #include "Detector.h"
 #include "Learner.h"
 
@@ -25,7 +25,7 @@ namespace _TLD {
 using namespace std;
 using namespace cv;
 
-class _TLD
+class TLD
 {
 private:
     MedianFlow *tracker;
