@@ -19,16 +19,17 @@
 #include "TLDSystemStruct.h"
 #include "include/json.hpp"
 #include "NetworkHandler.hpp"
+#include <time.h>
 
 using namespace std;
 using namespace cv;
 
 using json = nlohmann::json;
 
-const char *FETCH_NEW_TASKS_URL;
-const char *GET_FILE_INFO_URL;
-const char *POST_RESULTS_URL;
-const char *UPDATE_STATE_URL;
+char FETCH_NEW_TASKS_URL[1000];
+char GET_FILE_INFO_URL[1000];
+char POST_RESULTS_URL[1000];
+char UPDATE_STATE_URL[1000];
 
 void loadURL(string configurePath){
     ifstream configFile(configurePath, std::ios::binary);
@@ -38,10 +39,10 @@ void loadURL(string configurePath){
     json config;
     config=json::parse(s.c_str());
     
-    FETCH_NEW_TASKS_URL = config["FETCH_NEW_TASKS_URL"].get<string>().c_str();
-    GET_FILE_INFO_URL = config["GET_FILE_INFO_URL"].get<string>().c_str();
-    POST_RESULTS_URL = config["POST_RESULTS_URL"].get<string>().c_str();
-    UPDATE_STATE_URL = config["UPDATE_STATE_URL"].get<string>().c_str();
+    strcpy(FETCH_NEW_TASKS_URL, config["FETCH_NEW_TASKS_URL"].get<string>().c_str());
+    strcpy(GET_FILE_INFO_URL, config["GET_FILE_INFO_URL"].get<string>().c_str());
+    strcpy(POST_RESULTS_URL, config["POST_RESULTS_URL"].get<string>().c_str());
+    strcpy(UPDATE_STATE_URL, config["UPDATE_STATE_URL"].get<string>().c_str());
     return;
 }
 
@@ -117,7 +118,16 @@ void track(json task) {
 //    cerr << "list=" + json(results).dump() << endl;
     
     // POST result
-    url = string(POST_RESULTS_URL) + "?ad_info_id=" + task["adInfoId"].get<string>();
+    
+    //get datetime
+    char datetime[80];
+    time_t rawtime;
+    struct tm * timeinfo;
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    strftime (datetime, 80, "%F %R", timeinfo);
+    
+    url = string(POST_RESULTS_URL) + "?ad_info_id=" + task["adInfoId"].get<string>() + "&create_time=" + datetime + "&create_user_id=" + net::ip;
     
     while(!net::post(url.c_str(), "list=" + json(results).dump())) {
         sleep(5);
