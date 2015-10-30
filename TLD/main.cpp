@@ -5,8 +5,10 @@
 //  Created by 陈裕昕 on 11/4/14.
 //  Copyright (c) 2014 Fudan. All rights reserved.
 //
-
+#include <unistd.h>
+#include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <opencv2/opencv.hpp>
 #include "ViewController.h"
 #include "VideoController.h"
@@ -15,103 +17,74 @@
 #include "Detector.h"
 #include "TLD.h"
 #include "TLDSystemStruct.h"
+#include "include/json.hpp"
+#include "NetworkHandler.hpp"
+#include <time.h>
 
 using namespace std;
 using namespace cv;
 
-Rect readRect()
-{
-    int width, height, x, y;
-    scanf("[%d x %d from (%d, %d)]\n", &width, &height, &x, &y);
+using json = nlohmann::json;
+
+char FETCH_NEW_TASKS_URL[1000];
+char GET_FILE_INFO_URL[1000];
+char POST_RESULTS_URL[1000];
+char UPDATE_STATE_URL[1000];
+
+void loadURL(string configurePath){
+    ifstream configFile(configurePath, std::ios::binary);
     
-    return Rect(x, y, width, height);
+    string s = string(std::istreambuf_iterator<char>(configFile),
+             std::istreambuf_iterator<char>());
+    json config;
+    config=json::parse(s.c_str());
+    
+    strcpy(FETCH_NEW_TASKS_URL, config["FETCH_NEW_TASKS_URL"].get<string>().c_str());
+    strcpy(GET_FILE_INFO_URL, config["GET_FILE_INFO_URL"].get<string>().c_str());
+    strcpy(POST_RESULTS_URL, config["POST_RESULTS_URL"].get<string>().c_str());
+    strcpy(UPDATE_STATE_URL, config["UPDATE_STATE_URL"].get<string>().c_str());
+    return;
 }
 
-void testOnTLDDataset()
-{
-    string dir("/Users/Orthocenter/Developments/TLD/dataset2/06_car/");
-
-    string initFilename(dir + "init.txt");
-    string retFilename(dir + "myRet7.txt");
-    
-    FILE *fin = fopen(initFilename.c_str(), "r");
-    FILE *fout = fopen(retFilename.c_str(), "w");
-
-    VideoController videoController(dir, ".jpg");
-    ViewController viewController(&videoController);
-    
-    videoController.readNextFrame();
-
-    int tlx, tly, brx, bry;
-    fscanf(fin, "%d,%d,%d,%d", &tlx, &tly, &brx, &bry);
-    fprintf(fout, "%d,%d,%d,%d\n", tlx, tly, brx, bry);
-    
-    Rect rect = Rect(Point2d(tlx, tly), Point2d(brx, bry));
-    cerr << "Input Rect : " <<  rect << endl;
-    
-    viewController.refreshCache();
-    viewController.drawRect(rect, COLOR_BLUE);
-    viewController.showCache();
-    waitKey();
-    
-    TLD tld(videoController.getCurrFrame(), rect);
-    
-    while(videoController.readNextFrame())
-    {
-        cerr << "Frame #" << videoController.frameNumber() << endl;
-        tld.setNextFrame(videoController.getCurrFrame());
-        
-        Rect bbTrack;
-        TYPE_DETECTOR_RET bbDetect;
-        
-        clock_t st = clock();
-      
-        tld.track();
-        
-        clock_t ed = clock();
-        cerr << "Time : " << (double)(ed - st) / CLOCKS_PER_SEC * 1000 << "ms" << endl;
-
-        viewController.refreshCache();
-        viewController.drawRect(tld.getBB(), COLOR_GREEN, 2);
-        viewController.showCache();
-        
-        cerr << endl;
-        
-        Rect retBB = tld.getBB();
-        if(retBB == Rect(Point2d(-1, -1), Point2d(-1, -1)))
-        {
-            fprintf(fout, "NaN,NaN,NaN,NaN\n");
-        }
-        else
-        {
-            fprintf(fout, "%d,%d,%d,%d\n", retBB.tl().x, retBB.tl().y, retBB.br().x, retBB.br().y);
-        }
+void track(json task) {
+    // get file path
+    string fileInfo;
+    string url = string(GET_FILE_INFO_URL) + "?movie_file_id=";
+    url += task["movieId"].get<string>();
+    string _res;
+    while(!net::get(url.c_str(), _res)) {
+        sleep(5);
     }
     
-    fclose(fin);
-    fclose(fout);
-}
-
-void testOnVideo()
-{
-    string filename("/Users/Orthocenter/Developments/TLD/1.m4v");
+    json res = json::parse(_res);
+    string filename = res["filePath"];
+    
+//    cerr << filename << endl;
+    
+    // track
+    vector<json> results;
     
     VideoController videoController(filename);
-    ViewController viewController(&videoController);
+//    ViewController viewController(&videoController);
     
+    videoController.jumpToFrameNum(task["adFrame"]);
     videoController.readNextFrame();
     
-    Rect rect = viewController.getRect();
-    cerr << "Input Rect : " <<  rect << endl;
+    Point2i inTl(task["adX"], task["adY"]);
+    Point2i inBr(task["adX"].get<int>() + task["adWidth"].get<int>(), task["adY"].get<int>() + task["adHeight"].get<int>());
+    Rect rect(inTl, inBr);
+
+//    cerr << "Input Rect : " <<  rect << endl;
     
-    viewController.refreshCache();
-    viewController.drawRect(rect, COLOR_BLUE);
-    viewController.showCache();
-    waitKey();
+//    viewController.refreshCache();
+//    viewController.drawRect(rect, COLOR_BLUE);
+//    viewController.showCache();
+//    waitKey();
     
     TLD tld(videoController.getCurrFrame(), rect);
     
-    while(videoController.readNextFrame())
+    int status = TLD_TRACK_SUCCESS;
+    while(status == TLD_TRACK_SUCCESS && videoController.readNextFrame())
     {
         cerr << "Frame #" << videoController.frameNumber() << endl;
         tld.setNextFrame(videoController.getCurrFrame());
@@ -121,142 +94,94 @@ void testOnVideo()
         
         clock_t st = clock();
         
-        tld.track();
+        status = tld.track();
         
         clock_t ed = clock();
         cerr << "Time : " << (double)(ed - st) / CLOCKS_PER_SEC * 1000 << "ms" << endl;
         
-        viewController.refreshCache();
-        viewController.drawRect(tld.getBB(), COLOR_GREEN, 2);
-        viewController.showCache();
+//        viewController.refreshCache();
+//        viewController.drawRect(tld.getBB(), COLOR_GREEN, 2);
+//        viewController.showCache();
         
-        cerr << endl;
-    }
-
-}
-
-
-void testOnCamera()
-{
-    VideoController videoController(0);
-    ViewController viewController(&videoController);
-    
-    videoController.readNextFrame();
-    
-    Rect rect = viewController.getRect();
-    cerr << "Input Rect : " <<  rect << endl;
-    
-    TLD tld(videoController.getCurrFrame(), rect);
-    
-    while(videoController.readNextFrame())
-    {
-        cerr << "Frame #" << videoController.frameNumber() << endl;
-        tld.setNextFrame(videoController.getCurrFrame());
-        
-        Rect bbTrack;
-        TYPE_DETECTOR_RET bbDetect;
-        
-        clock_t st = clock();
-        
-        tld.track();
-        
-        clock_t ed = clock();
-        cerr << "Time : " << (double)(ed - st) / CLOCKS_PER_SEC * 1000 << "ms" << endl;
-        
-        viewController.refreshCache();
-        viewController.drawRect(tld.getBB(), COLOR_GREEN, 2);
-        viewController.showCache();
+        results.push_back({
+            {"adX", tld.getBB().tl().x},
+            {"adY", tld.getBB().tl().y},
+            {"adWidth", tld.getBB().width},
+            {"adHeight", tld.getBB().height},
+            {"adFrame", videoController.frameNumber() - 1}
+        });
         
         cerr << endl;
     }
     
+//    cerr << results << endl;
+//    cerr << "list=" + json(results).dump() << endl;
+    
+    // POST result
+    
+    //get datetime
+    char datetime[80];
+    time_t rawtime;
+    struct tm * timeinfo;
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    strftime (datetime, 80, "%F %R", timeinfo);
+    
+    url = string(POST_RESULTS_URL) + "?ad_info_id=" + task["adInfoId"].get<string>() + "&create_time=" + datetime + "&create_user_id=" + net::ip;
+    
+    while(!net::post(url.c_str(), "list=" + json(results).dump())) {
+        sleep(5);
+    }
 }
 
-void stabilize()
-{
-    string dir("/home/cyx/Developments/OpenTLD/_input/06_car/");
-    //VideoController videoController(dir, ".jpg");
-    VideoController videoController("/Users/Orthocenter/Developments/TLD/4.mov");
-    ViewController viewController(&videoController);
+void updateState(string ad_info_id, char state) {
+    string data = "";
+    string url = string(UPDATE_STATE_URL) + "?" + "ad_info_id=" + ad_info_id + "&" + "state=" + state;
+//    cerr << url << " " << data << endl;
 
-    videoController.readNextFrame();
-
-    Rect rect;
-    bool drawBBox = true;
-    if(drawBBox)
-    {
-        rect = viewController.getRect();
+    while(!net::post(url.c_str(), data)) {
+        sleep(5);
     }
-    else
-    {
-        string initFilename(dir + "init.txt");
-        FILE *fin = fopen(initFilename.c_str(), "r");
-        int tlx, tly, brx, bry;
-        fscanf(fin, "%d,%d,%d,%d", &tlx, &tly, &brx, &bry);
+}
 
-        rect = Rect(Point2d(tlx, tly), Point2d(brx, bry));
-        fclose(fin);
+void fetchNewTasks() {
+    string _res;
+    while(!net::get(FETCH_NEW_TASKS_URL, _res)) {
+        sleep(5);
     }
-
-    cerr << "Input Rect : " <<  rect << endl;
-
-    TLD tld(videoController.getCurrFrame(), rect);
-
-    int width = videoController.frameSize().width;
-    int height = videoController.frameSize().height;
-
-    Point2i centerOut;
-    centerOut.x = width / 2;
-    centerOut.y = height / 2;
-
-    while(videoController.readNextFrame())
-    {
-        tld.setNextFrame(videoController.getCurrFrame());
-        int status = tld.track();
-
-        if(status == TLD_TRACK_SUCCESS)
-        {
-            Point2i centerIn;
-            centerIn.x = (tld.getBB().tl().x + tld.getBB().br().x) / 2;
-            centerIn.y = (tld.getBB().tl().y + tld.getBB().br().y) / 2;
-
-            Mat output(videoController.frameSize(), CV_8UC3, Scalar::all(0));
-
-            int dx = centerOut.x - centerIn.x;
-            int dy = centerOut.y - centerIn.y;
-
-            Point2i inTl(max(0, -dx), max(0, -dy));
-            Point2i inBr(min(width, width - dx), min(height, height - dy));
-            Point2i outTl(max(0, dx), max(0, dy));
-            Point2i outBr(min(width, width + dx), min(height, height + dy));
-            Rect ROIIn(inTl, inBr);
-            Rect ROIOut(outTl, outBr);
-
-            videoController.getCurrFrame()(ROIIn).copyTo(output(ROIOut));
-            imshow("Stabilize", output);
-            waitKey(1);
-        }
-        else
-        {
-            Mat output(videoController.frameSize(), CV_8U, Scalar::all(0));
-
-            imshow("Stabilize", output);
-            waitKey(1);
-        }
-
-        viewController.refreshCache();
-        viewController.drawRect(tld.getBB(), COLOR_GREEN, 2);
-        viewController.showCache();
+    
+    json res = json::parse(_res);
+    
+    for(auto task : res["list"]) {
+        updateState(task["adInfoId"], '1');
+        
+        track(task);
+        
+        updateState(task["adInfoId"], '2');
     }
 }
 
 int main(int argc, char *argv[])
 {
     //testOnTLDDataset();
-    //testOnVideo();
-    //testOnCamera();
+    //testOnTLDDatasetAndOutputToFile();
+//    testOnVideo();
+//    testOnCamera();
+    //trajectory();
+    //stabilize();
     
-    stabilize();
+    if(argc<=1){
+        cerr<<"Usage: ./TLD {dir of configure.json}"<<endl;
+        return -1;
+    }
+    
+    
+    loadURL(argv[1]); //Set up the URLs
+
+    while(1) {
+        fetchNewTasks();
+        sleep(15);
+    }
     return 0;
 }
 
