@@ -23,7 +23,15 @@ VideoController::VideoController(const string &path):
     
     int width = videoCapture->get(CV_CAP_PROP_FRAME_WIDTH);
     int height = videoCapture->get(CV_CAP_PROP_FRAME_HEIGHT);
-    _frameSize = Size(width * (120.f /width), height * (120.f / width));
+
+    cerr << width << " " << height << endl;
+    
+    if(width > 480 || height > 480) {
+        int maxwh = max(width, height);
+        _frameSize = Size(width * (480.f / maxwh), height * (480.f / maxwh));
+    } else {
+        _frameSize = Size(width, height);
+    }
 
 }
 
@@ -47,6 +55,18 @@ VideoController::VideoController(int camera):
     int width = videoCapture->get(CV_CAP_PROP_FRAME_WIDTH);
     int height = videoCapture->get(CV_CAP_PROP_FRAME_HEIGHT);
     _frameSize = Size(width * (480.f /width), height * (480.f / width));
+}
+
+int VideoController::getWidth() {
+    return videoCapture->get(CV_CAP_PROP_FRAME_WIDTH);
+}
+
+int VideoController::getHeight() {
+    return videoCapture->get(CV_CAP_PROP_FRAME_HEIGHT);
+}
+
+double VideoController::getCurrMsec() {
+    return videoCapture->get(CV_CAP_PROP_POS_MSEC);
 }
 
 Mat VideoController::getCurrFrame()
@@ -80,7 +100,11 @@ bool VideoController::readNextFrame()
     {
         bool f = videoCapture -> read(frames[curr]);
         
-        resize(frames[curr], frames[curr], _frameSize);
+        if(f)
+        {
+            cerr << _frameSize;
+            resize(frames[curr], frames[curr], _frameSize);
+        }
         
         return f;
     }
@@ -100,5 +124,10 @@ int VideoController::frameNumber()
 
 void VideoController::jumpToFrameNum(int num)
 {
-    while(frameNumber() < num) readNextFrame();
+//    while(frameNumber() < num) readNextFrame();
+    videoCapture->set(CV_CAP_PROP_POS_FRAMES, num);
+}
+
+void VideoController::jumpToTime(double msec) {
+    videoCapture->set(CV_CAP_PROP_POS_MSEC, msec);
 }

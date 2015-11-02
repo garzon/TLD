@@ -23,13 +23,13 @@ private:
     
     Size _frameSize;
     
-    VideoCapture *videoCapture;
+
     
     string path, append;
     int totalFrame;
     
 public:
-    
+    VideoCapture *videoCapture;    
     bool cameraMode, imageMode;
     
     VideoController();
@@ -40,6 +40,10 @@ public:
     VideoController(const string &path, const string &append);
     VideoController(int camera = 0);
     
+    int getWidth();
+    int getHeight();
+    double getCurrMsec();
+    
     Mat getCurrFrame();
     Mat getPrevFrame();
     bool readNextFrame();
@@ -49,6 +53,7 @@ public:
     int frameNumber();
     
     void jumpToFrameNum(int num);
+    void jumpToTime(double time);
 };
 
 #endif /* defined(__MedianFlow__VideoController__) */
