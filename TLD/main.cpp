@@ -30,6 +30,7 @@ char FETCH_NEW_TASKS_URL[1000];
 char GET_FILE_INFO_URL[1000];
 char POST_RESULTS_URL[1000];
 char UPDATE_STATE_URL[1000];
+char FILEPATH_PREFIX[1000];
 
 void loadURL(string configurePath){
     ifstream configFile(configurePath, std::ios::binary);
@@ -43,6 +44,7 @@ void loadURL(string configurePath){
     strcpy(GET_FILE_INFO_URL, config["GET_FILE_INFO_URL"].get<string>().c_str());
     strcpy(POST_RESULTS_URL, config["POST_RESULTS_URL"].get<string>().c_str());
     strcpy(UPDATE_STATE_URL, config["UPDATE_STATE_URL"].get<string>().c_str());
+    strcpy(FILEPATH_PREFIX, config["FILEPATH_PREFIX"].get<string>().c_str());
     return;
 }
 
@@ -65,12 +67,13 @@ void track(json task) {
     
     json res = json::parse(_res);
     string filename = res["list"][0]["filePath"];
+    filename = string(FILEPATH_PREFIX) + filename;
     
 //    cerr << filename << endl;
     
     // track
     vector<json> results;
-    
+    cout << "opening " << filename << endl; 
     VideoController videoController(filename);
 //    ViewController viewController(&videoController);
     
